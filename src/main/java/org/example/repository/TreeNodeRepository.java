@@ -11,4 +11,9 @@ public class TreeNodeRepository {
     public List<TreeNode> getTreeNodes(){
         return treeNodes;
     }
-}
+
+    public List<TreeNode> setTreeNodes(List<TreeNode> nodes){
+        treeNodes = nodes;
+        return treeNodes;
+    }
+ }

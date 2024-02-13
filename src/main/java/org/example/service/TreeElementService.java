@@ -5,23 +5,30 @@ import org.example.model.Tree;
 import org.example.repository.TreeNodeRepository;
 import org.example.repository.TreeElementRepository;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class TreeElementService {
-    private TreeElementRepository treeElementRepository = new TreeElementRepository();
-    private TreeNodeRepository treeRepository = new TreeNodeRepository();
+    private final TreeElementRepository treeElementRepository = new TreeElementRepository();
+    private final TreeNodeRepository treeRepository = new TreeNodeRepository();
+    private final Map<Integer, List<TreeNode>> treeNodeHashMap = new HashMap<>();
 
     public List<TreeNode> getTreeStructure(){
         List<Tree> trees = treeElementRepository.getAll();
-        List<TreeNode> treeHeads = treeRepository.getTreeNodes();
 
         for (Tree element: trees) {
-            if(element.getParentId() == null){
-
-                treeHeads.add(new TreeNode(element.getId(), element.getName()));
+            TreeNode newNode = new TreeNode(element.getId(), element.getName());
+            if(treeNodeHashMap.containsKey(element.getParentId())){
+                treeNodeHashMap.get(element.getParentId()).add(newNode);
+            }
+            else{
+                List<TreeNode> newList = new ArrayList<>();
+                newList.add(newNode);
+                treeNodeHashMap.put(element.getParentId(), newList);
             }
         }
+
+        List<TreeNode> treeHeads = treeNodeHashMap.get(null);
+        treeRepository.setTreeNodes(treeHeads);
 
         for(TreeNode node : treeHeads){
             findChildNodes(node);
@@ -31,15 +38,15 @@ public class TreeElementService {
     }
 
     private void findChildNodes(TreeNode parent){
-        List<Tree> trees = treeElementRepository.getAll();
+        List<TreeNode> children = treeNodeHashMap.get(parent.getId());
 
-        for (Tree child: trees) {
+        if(children == null)
+            return;
 
-            if(Objects.equals(child.getParentId(), parent.getId())){
-                TreeNode newChild = new TreeNode(child.getId(), child.getName());
-                parent.getChilds().add(newChild);
-                findChildNodes(newChild);
-            }
+        parent.setChilds(children);
+
+        for (TreeNode child: children) {
+            findChildNodes(child);
         }
     }
 
@@ -56,6 +63,7 @@ public class TreeElementService {
 
         for(TreeNode subNode : node.getChilds()){
             printNode(subNode, prefix.append("-"));
+
             prefix.deleteCharAt(prefix.length() - 1);
         }
     }
