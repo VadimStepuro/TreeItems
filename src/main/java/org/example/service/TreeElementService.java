@@ -17,12 +17,15 @@ public class TreeElementService {
 
         for (Tree element: trees) {
             TreeNode newNode = new TreeNode(element.getId(), element.getName());
+
             if(treeNodeHashMap.containsKey(element.getParentId())){
                 treeNodeHashMap.get(element.getParentId()).add(newNode);
             }
+
             else{
                 List<TreeNode> newList = new ArrayList<>();
                 newList.add(newNode);
+
                 treeNodeHashMap.put(element.getParentId(), newList);
             }
         }
